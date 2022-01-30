@@ -145,7 +145,7 @@ void check_for_interpolation(
 	if (pendulums.size() < 5)
 		throw std::runtime_error("Less than 5 pendulums");
 
-	fptype angle_eps = 0.01 + random_float(0.0001f );
+	fptype angle_eps = 0.01;
 	auto last_it = std::prev(pendulums.end());
 	auto next_it = std::next(cur_it);
 	bool is_last = cur_it == last_it;
@@ -191,19 +191,14 @@ void check_for_interpolation(
 void evalute_set_of_pendulums(std::list<pendulum>& pendulums) {
 	size_t idx = 0;
 	for (auto it = pendulums.begin(); it != pendulums.end(); ++it)
+	{
 		it->evaluate(0.0125);
+	}
 
 	for (auto it = pendulums.begin(); it != pendulums.end(); ++it, ++idx) {
 		check_for_interpolation(pendulums, it);
 	}
 }
-
-////////////////////////////////////////////////
-///////PULLED FROM SAFC WITHOUT CHANGES/////////
-////////////////////////////////////////////////
-
-#define _WH(MainWindow,Element) ((*(*WH)[MainWindow])[Element])//...uh
-#define _WH_t(MainWindow,Element,Type) ((Type)_WH(MainWindow,Element))
 
 void onTimer(int v);
 void mDisplay() {
@@ -232,7 +227,7 @@ void mDisplay() {
 			pd.p1 = 0;
 			pd.p2 = 0;
 			pd.theta1 = 3.1;
-			pd.theta2 = 2.9 + (1e-1 / list_size) * (fptype(i) + 1);
+			pd.theta2 = 2.9 + (.5 / list_size) * (fptype(i) + 1);
 			pd.observed_index = i;
 			pends.push_back(pd);
 		}
@@ -277,13 +272,14 @@ void OnResize(int x, int y) {
 	glViewport(0, 0, x, y);
 }
 
-void mKey(BYTE k, int x, int y) {
+void mKey(unsigned char k, int x, int y) {
 	if (k == 's') 
 		is_animation_active = !is_animation_active;
 
 	if (k == 27)
 		exit(1);
 }
+
 void mSpecialKey(int Key, int x, int y) {
 	auto modif = glutGetModifiers();
 
@@ -298,9 +294,12 @@ void mSpecialKey(int Key, int x, int y) {
 }
 
 int main(int argc, char** argv) {
+
+#ifdef WIN32
 	ShowWindow(GetConsoleWindow(), SW_HIDE);
 
 	SetPriorityClass(GetCurrentProcess(), HIGH_PRIORITY_CLASS);
+#endif
 
 	glutInit(&argc, argv);
 
