@@ -13,22 +13,28 @@
 
 namespace dixelu {
 
-template<size_t dims>
+template<size_t dims, typename general_float_type>
 struct point {
-	std::array<double, dims> pt;
+	std::array<general_float_type, dims> pt;
+	using self_type = point<dims, general_float_type>;
 	point() {
 		for (int i = 0; i < dims; i++)
-			pt[i] = 0;
+			pt[i] = general_float_type();
 	}
-	explicit point(double v){
+	explicit point(general_float_type v){
 		for (int i = 0; i < dims; i++)
 			pt[i] = v;
 	}
-	point(const point<dims>& P) {
+	point(const self_type&& P) :
+		pt(std::move(P.pt))
+	{
+	}
+	point(const self_type& P)
+	{
 		for (int i = 0; i < dims; i++)
 			pt[i] = P.pt[i];
 	}
-	point(const std::initializer_list<double>& il_d) {
+	point(const std::initializer_list<general_float_type>& il_d) {
 		auto y = il_d.begin();
 		for (size_t i = 0; i < dims && y != il_d.end(); i++, y++)
 			pt[i] = *y;
@@ -38,7 +44,7 @@ struct point {
 		for (size_t i = 0; i < dims && y != il.end(); i++, y++)
 			pt[i] = *y;
 	}
-	point(const std::vector<double>& il_d) {
+	point(const std::vector<general_float_type>& il_d) {
 		auto y = il_d.cbegin();
 		for (size_t i = 0; i < dims && y != il_d.end(); i++, y++)
 			pt[i] = *y;
@@ -48,116 +54,125 @@ struct point {
 		for (size_t i = 0; i < dims && y != il.end(); i++, y++)
 			pt[i] = *y;
 	}
-	inline double get_norm2() const {
-		double sum = 0;
+	inline general_float_type get_norm2() const {
+		general_float_type sum = general_float_type();
 		for (int i = 0; i < dims; i++)
 			sum += pt[i] * pt[i];
 		return sum;
 	}
-	inline double get_norm(double deg) const {
-		double sum = 0;
+	inline general_float_type get_norm(general_float_type deg) const {
+		general_float_type sum = general_float_type();
 		for (int i = 0; i < dims; i++)
 			sum += std::pow(pt[i],deg);
-		return std::pow(sum,1./deg);
+		return std::pow(sum, 1./deg);
 	}
-	inline double get_norm() const {
+	inline general_float_type get_norm() const {
 		return std::sqrt(get_norm2());
 	}
 	inline size_t get_dims() const {
 		return dims;
 	}
-	inline double& operator[](size_t D) {
+	inline general_float_type& operator[](size_t D) {
 		return pt[D];
 	}
-	inline const double& operator[](size_t D) const {
+	inline const general_float_type& operator[](size_t D) const {
 		return pt[D];
 	}
-	inline void swap(point<dims>& P) {
+	inline void swap(self_type& P) {
 		pt.swap(P.pt);
 	}
-	inline point<dims> operator+(const point<dims>& P) const {
-		point<dims> N;
+	inline self_type operator+(const self_type& P) const {
+		self_type N;
 		for (size_t i = 0; i < dims; i++)
 			N[i] = pt[i] + P[i];
 		return N;
 	}
-	inline point<dims> operator+=(const point<dims>& P) {
+	inline self_type operator+=(const self_type& P) {
 		for (size_t i = 0; i < dims; i++)
 			pt[i] += P[i];
 		return *this;
 	}
-	inline point<dims> operator-(const point<dims>& P) const {
-		point<dims> N;
+	inline self_type operator-(const self_type& P) const {
+		self_type N;
 		for (size_t i = 0; i < dims; i++)
 			N[i] = pt[i] - P[i];
 		return N;
 	}
-	inline point<dims> operator-=(const point<dims>& P) {
+	inline self_type operator-=(const self_type& P) {
 		for (size_t i = 0; i < dims; i++)
 			pt[i] -= P[i];
 		return *this;
 	}
-	inline point<dims> operator*(double M) const {
-		point<dims> N;
+	inline self_type operator*(general_float_type M) const {
+		self_type N;
 		for (size_t i = 0; i < dims; i++)
 			N[i] = pt[i] * M;
 		return N;
 	}
-	inline point<dims> operator*=(double M) {
+	inline self_type operator*=(general_float_type M) {
 		for (size_t i = 0; i < dims; i++)
 			pt[i] *= M;
 		return *this;
 	}
-	inline point<dims> operator/(double M) const {
-		point<dims> N;
+	inline self_type operator/(general_float_type M) const {
+		self_type N;
 		for (size_t i = 0; i < dims; i++)
 			N[i] = pt[i] / M;
 		return N;
 	}
-	inline point<dims> operator/=(double M) {
+	inline self_type operator/=(general_float_type M) {
 		return ((*this) *= (1. / M));
 	}
-	inline double operator*(const point<dims>& P) const {
-		double sum = 0;
+	inline general_float_type operator*(const self_type& P) const {
+		general_float_type sum = general_float_type();
 		for (size_t i = 0; i < dims; i++)
 			sum += pt[i] * P[i];
 		return sum;
 	}
-	inline point<dims> operator-() {
+	inline self_type operator-() {
 		for (size_t i = 0; i < dims; i++)
 			pt[i] = 0 - pt[i];
 		return *this;
 	}
-	inline bool operator<(const point<dims>& P) const {
+	inline bool operator<(const self_type& P) const {
 		for (size_t i = 0; i < dims; i++)
 			if (pt[i] >= P.pt[i])
 				return false;
 		return true;
 	}
-	inline bool operator>=(const point<dims>& P) const {
+	inline bool operator>=(const self_type& P) const {
 		return !(*this < P);
 	}
-	inline bool operator>(const point<dims>& P) const {
+	inline bool operator>(const self_type& P) const {
 		return P < *this;
 	}
-	inline bool operator==(const point<dims>& P) const {
+	inline bool operator==(const self_type& P) const {
 		for (size_t i = 0; i < dims; i++)
 			if (pt[i] != P[i]) return false;
 		return true;
 	}
-	inline bool operator!=(const point<dims>& P) const {
+	inline bool operator!=(const self_type& P) const {
 		return !(*this == P);
 	}
-	inline bool operator<=(const point<dims>& P) const {
+	inline bool operator<=(const self_type& P) const {
 		return !(P < *this);
 	}
-	inline point<dims> normalize() const {
+	inline self_type normalize() const {
 		return (*this) / get_norm();
+	}
+	inline self_type operator=(const self_type& M) {
+		for (size_t i = 0; i < dims; i++)
+			pt[i] *= M;
+		return *this;
+	}
+	inline self_type operator=(const self_type&& M) {
+		pt = std::move(M.pt);
+		return *this;
 	}
 };
 
-template<size_t dims>
-std::ostream& operator<<(std::ostream& os, const point<dims>& P) {
+template<size_t dims, typename general_float_type>
+std::ostream& operator<<(std::ostream& os, const point<dims, general_float_type>& P) {
 	os << "(";
 	for (size_t i = 0; i < dims; i++) {
 		os << P[i];
@@ -168,30 +183,34 @@ std::ostream& operator<<(std::ostream& os, const point<dims>& P) {
 	return os;
 }
 
-template<size_t dims>
-inline point<dims> operator*(double M, point<dims> P) {
-	point<dims> N;
+template<size_t dims, typename general_float_type>
+inline point<dims, general_float_type> operator*(general_float_type M, point<dims, general_float_type> P) {
+	point<dims, general_float_type> N;
 	for (size_t i = 0; i < dims; i++)
 		N[i] = P[i] * M;
 	return N;
 }
 
-template<size_t dims>
+template<size_t dims, typename general_float_type, general_float_type GFLOAT_EPSILON = 0.0001>
 struct sq_matrix {
-	static constexpr double DOUBLE_EPSILON = 0.0000000000000001;
-	double utilisation = 0;
-	std::array<point<dims>, dims> ar;
+	general_float_type utilisation = general_float_type();
+
+	using point_type = point<dims, general_float_type>;
+	using self_type = sq_matrix<dims, general_float_type>;
+
+	std::array<point_type, dims> ar;
+
 	sq_matrix() {
 		for (size_t i = 0; i < dims; i++)
-			ar[i] = point<dims>();
+			ar[i] = point_type();
 	}
-	explicit sq_matrix(double E_num) {
+	explicit sq_matrix(general_float_type E_num) {
 		for (size_t i = 0; i < dims; i++) {
-			ar[i] = point<dims>();
+			ar[i] = point_type();
 			ar[i][i] = E_num;
 		}
 	}
-	sq_matrix(std::initializer_list<point<dims>> IL) {
+	sq_matrix(std::initializer_list<point_type> IL) {
 		size_t id = 0;
 		for (auto&& p : IL) {
 			if (id == dims)
@@ -200,79 +219,79 @@ struct sq_matrix {
 			id++;
 		}
 	}
-	sq_matrix(const std::array<point<dims>, dims>& ar) :ar(ar) {}
-	sq_matrix(const sq_matrix<dims>& m) :ar(m.ar) {}
-	inline point<dims> operator*(const point<dims>& p) const {
-		point<dims> T;
+	sq_matrix(const std::array<point_type, dims>& ar) :ar(ar) {}
+	sq_matrix(const self_type& m) :ar(m.ar) {}
+	inline point_type operator*(const point_type& p) const {
+		point_type T;
 		for (int i = 0; i < dims; i++) {
 			T[i] = ar[i] * p;
 		}
 		return T;
 	}
-	inline sq_matrix<dims> operator*(double num) const {
-		sq_matrix<dims> T;
+	inline self_type operator*(general_float_type num) const {
+		self_type T;
 		for (int i = 0; i < dims; i++) {
 			T[i] = ar[i]*num;
 		}
 		return T;
 	}
-	inline sq_matrix<dims> operator*=(double num) {
+	inline self_type operator*=(general_float_type num) {
 		for (int i = 0; i < dims; i++) 
 			ar[i]*=num;
 		return *this;
 	}
-	inline sq_matrix<dims> operator/(double num) const {
+	inline self_type operator/(general_float_type num) const {
 		return *this * (1./num);
 	}
-	inline sq_matrix<dims> operator/=(double num) {
+	inline self_type operator/=(general_float_type num) {
 		return ((*this)*=(1./num));
 	}
-	inline sq_matrix<dims> operator+(const sq_matrix<dims>& p) const {
-		sq_matrix<dims> T;
+	inline self_type operator+(const self_type& p) const {
+		self_type T;
 		for (int i = 0; i < dims; i++) {
 			T[i] = ar[i] + p[i];
 		}
 		return T;
 	}
-	inline sq_matrix<dims> operator-(const sq_matrix<dims>& p) const {
-		sq_matrix<dims> T;
+	inline self_type operator-(const self_type& p) const {
+		self_type T;
 		for (int i = 0; i < dims; i++) {
 			T[i] = ar[i] - p[i];
 		}
 		return T;
 	}
-	inline sq_matrix<dims> operator+=(const sq_matrix<dims>& p) {
+	inline self_type operator+=(const self_type& p) {
 		for (int i = 0; i < dims; i++) {
 			ar[i] += p[i];
 		}
 		return *this;
 	}
-	inline sq_matrix<dims> operator-=(const sq_matrix<dims>& p) {
+	inline self_type operator-=(const self_type& p) {
 		for (int i = 0; i < dims; i++) {
 			ar[i] -= p[i];
 		}
 		return *this;
 	}
-	inline const point<dims>& operator[](size_t i) const {
+	inline const point_type& operator[](size_t i) const {
 		return ar[i];
 	}
-	inline point<dims>& operator[](size_t i) {
+	inline point_type& operator[](size_t i) {
 		return ar[i];
 	}
-	inline double& at(size_t point_id, size_t coordinate) {
+	inline general_float_type& at(size_t point_id, size_t coordinate) {
 		if (point_id < dims && coordinate < dims) {
 			return ar[point_id][coordinate];
 		}
 		else return utilisation;
 	}
-	inline const double& at(size_t point_id, size_t coordinate) const {
+	inline const general_float_type& at(size_t point_id, size_t coordinate) const {
 		if (point_id < dims && coordinate < dims) {
 			return ar[point_id][coordinate];
 		}
 		else return utilisation;
 	}
-	inline sq_matrix<dims> operator*(const sq_matrix<dims>& M) const {
-		sq_matrix<dims> P;
+	inline self_type operator*(const self_type& M) const {
+		self_type P;
 		for (size_t y = 0; y < dims; y++) {
 			for (size_t x = 0; x < dims; x++) {
 				for (size_t i = 0; i < dims; i++) {
@@ -282,10 +301,11 @@ struct sq_matrix {
 		}
 		return P;
 	}
-	inline sq_matrix<dims> inverse() const {
-		double max_value = 0, mul = 0;
+	inline self_type inverse() const {
+		general_float_type max_value = general_float_type();
+		general_float_type mul = general_float_type();
 		size_t id = 0;
-		sq_matrix<dims> E(1), A(*this);
+		self_type E(1), A(*this);
 		for (size_t step = 0; step < dims; step++) {
 			id = step;
 			max_value = 0;
@@ -295,8 +315,8 @@ struct sq_matrix {
 					id = coid;
 				}
 			}
-			if (std::abs(max_value) <= DOUBLE_EPSILON)
-				return sq_matrix<dims>();
+			if (std::abs(max_value) <= GFLOAT_EPSILON)
+				return self_type();
 			if (id != step) {
 				std::swap(A[id], A[step]);
 				std::swap(E[id], E[step]);
@@ -314,11 +334,11 @@ struct sq_matrix {
 		}
 		return E;
 	}
-	inline double determinant() const {
-		double determ = 1;
-		double temp = 0, max_value = 0, mul = 0;
+	inline general_float_type determinant() const {
+		general_float_type determ = 1;
+		general_float_type temp = 0, max_value = 0, mul = 0;
 		size_t id = 0;
-		sq_matrix<dims> A(*this);
+		self_type A(*this);
 		for (size_t step = 0; step < dims; step++) {
 			id = step;
 			max_value = 0;
@@ -328,7 +348,7 @@ struct sq_matrix {
 					id = coid;
 				}
 			}
-			if (std::abs(max_value) <= DOUBLE_EPSILON)
+			if (std::abs(max_value) <= GFLOAT_EPSILON)
 				return 0;
 			if (id != step)
 				std::swap(A[id], A[step]);
@@ -344,8 +364,8 @@ struct sq_matrix {
 		}
 		return determ;
 	}
-	inline static point<dims> solve_using_eulers_method(sq_matrix<dims> A, point<dims> P) {
-		double max_value = 0, mul = 0;
+	inline static point_type solve_using_eulers_method(self_type A, point_type P) {
+		general_float_type max_value = 0, mul = 0;
 		size_t id = 0;
 		for (size_t step = 0; step < dims; step++) {
 			id = step;
@@ -356,8 +376,8 @@ struct sq_matrix {
 					id = coid;
 				}
 			}
-			if (std::abs(max_value) <= DOUBLE_EPSILON)
-				return point<dims>();
+			if (std::abs(max_value) <= GFLOAT_EPSILON)
+				return point_type();
 			if (id != step) {
 				std::swap(A[id], A[step]);
 				std::swap(P[id], P[step]);
@@ -375,15 +395,15 @@ struct sq_matrix {
 		}
 		return P;
 	}
-	inline sq_matrix<dims> operator^(int degree) {
+	inline self_type operator^(int degree) {
 		bool inverse = false;
 		if (degree < 0) {
 			inverse = true;
 			degree = -degree;
 		}
 		else if (!degree)
-			return sq_matrix<dims>(1.);
-		auto cur_matrix = sq_matrix<dims>(1.), deg_co_matrix = *this;
+			return self_type(1.);
+		auto cur_matrix = self_type(1.), deg_co_matrix = *this;
 		while (degree) {
 			switch (degree & 1) {
 			case 1:
@@ -398,7 +418,7 @@ struct sq_matrix {
 		}
 		return inverse ? cur_matrix.inverse() : cur_matrix;
 	}
-	inline sq_matrix<dims - 1> minor_matrix(const size_t& x_minor, const size_t& y_minor) const {
+	inline sq_matrix<dims - 1, general_float_type> minor_matrix(const size_t& x_minor, const size_t& y_minor) const {
 		auto minor_index = [](size_t x, size_t y, size_t minor_x, size_t minor_y) -> std::pair<int64_t, int64_t> {
 			if (x == minor_x)
 				return { -1,-1 };
@@ -410,7 +430,7 @@ struct sq_matrix {
 				y -= 1;
 			return { x,y };
 		};
-		sq_matrix<dims - 1> M;
+		sq_matrix<dims - 1, general_float_type> M;
 		for (size_t y = 0; y < dims; y++) {
 			for (size_t x = 0; x < dims; x++) {
 				auto mxy = minor_index(x, y, x_minor, y_minor);
@@ -425,17 +445,16 @@ struct sq_matrix {
 	}
 };
 
-template<size_t dims>
-inline point<dims> cross_prod(const std::array<point<dims>, dims - 1>& points) {
+template<size_t dims, typename general_float_type, general_float_type GFLOAT_EPSILON = 0.0001>
+inline point<dims, general_float_type> cross_prod(const std::array<point<dims, general_float_type>, dims - 1>& points) {
 	if (dims > 1) {
-		point<dims> answer;
-		std::array<point<dims>, dims> mx;
-		mx[0] = point<dims>(std::vector<double>(dims, 0.));
+		point<dims, general_float_type> answer;
+		std::array<point<dims, general_float_type>, dims> mx;
+		mx[0] = point<dims, general_float_type>(std::vector<general_float_type>(dims, 0));
 		std::copy(points.begin(), points.end(), mx.begin() + 1);
-		sq_matrix<dims> M(mx);
-		for (int i = 0; i < dims; i++) {
+		sq_matrix<dims, general_float_type, GFLOAT_EPSILON> M(mx);
+		for (int i = 0; i < dims; i++) 
 			answer[i] = M.minor_matrix(i, 0).determinant() * ((i & 1) ? (1.) : (-1.));
-		}
 		return answer;
 	}
 	else if (dims == 1)
@@ -444,8 +463,8 @@ inline point<dims> cross_prod(const std::array<point<dims>, dims - 1>& points) {
 		return {};
 }
 
-template<size_t dims>
-inline std::ostream& operator<<(std::ostream& in, const sq_matrix<dims>& M) {
+template<size_t dims, typename general_float_type, general_float_type GFLOAT_EPSILON = 0.0001>
+inline std::ostream& operator<<(std::ostream& in, const sq_matrix<dims, general_float_type, GFLOAT_EPSILON>& M) {
 	for (size_t y = 0; y < dims; y++) {
 		for (size_t x = 0; x < dims; x++) {
 			in << std::setfill(' ') << std::setw(15) << M.at(y, x) << " ";
