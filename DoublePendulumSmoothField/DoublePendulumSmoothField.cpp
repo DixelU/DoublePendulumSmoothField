@@ -105,7 +105,8 @@ struct pendulum {
 	}
 };
 
-auto hsva_to_rgba = [](pendulum::pt4 hsva)->pendulum::pt4 {
+pendulum::pt4 hsva_to_rgba(pendulum::pt4 hsva)
+{
 	fptype hh, p, q, t, ff;
 	int i;
 
@@ -254,10 +255,10 @@ void mInit() {
 	glMatrixMode(GL_PROJECTION);
 	glLoadIdentity();
 	gluOrtho2D(
-		(0 - inner_space_range) * (window_size_x / base_window_size_x),
-		inner_space_range * (window_size_x / base_window_size_x), 
-		(0 - inner_space_range) * (window_size_y / base_window_size_y),
-		inner_space_range * (window_size_y / base_window_size_y));
+		(0 - inner_space_range) * (float(window_size_x) / base_window_size_x),
+		inner_space_range * (float(window_size_x) / base_window_size_x), 
+		(0 - inner_space_range) * (float(window_size_y) / base_window_size_y),
+		inner_space_range * (float(window_size_y) / base_window_size_y));
 }
 
 void onTimer(int v) {
@@ -307,7 +308,7 @@ int main(int argc, char** argv) {
 	glutInitWindowSize(base_window_size_x, base_window_size_y);
 	glutCreateWindow("Double pendulum test :)");
 
-	glBlendFunc(GL_SRC_ALPHA, GL_ONE);//_MINUS_SRC_ALPHA
+	glBlendFunc(GL_SRC_ALPHA, GL_DST_ALPHA);//_MINUS_SRC_ALPHA
 	glEnable(GL_BLEND);
 
 	glEnable(GL_LINE_SMOOTH);//GL_POLYGON_SMOOTH
